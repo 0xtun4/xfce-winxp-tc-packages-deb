@@ -24,7 +24,6 @@ jobs:
 
       - name: Build project using packaging/buildall.sh
         run: |
-          cd packaging
           ./buildall.sh
 
       - name: Collect .deb packages from output
