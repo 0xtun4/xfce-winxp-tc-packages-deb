@@ -2,7 +2,7 @@ name: Build DEB Package with /packaging
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
