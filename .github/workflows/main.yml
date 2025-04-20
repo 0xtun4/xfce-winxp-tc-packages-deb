@@ -38,15 +38,16 @@ jobs:
           libupower-glib-dev \
           libpulse-dev
 
-      - name: Build project using packaging/buildall.sh
+      - name: Collect .deb packages from output
         run: |
-          cd packaging
-          ./buildall.sh -t deb
+          mkdir -p packaging/output
+          find packaging/xptc -type f -name "*.deb" -exec cp {} packaging/output/ \;
+
       - name: List built packages
-        run: ls -lh /packaging/xptc
+        run: ls -lh packaging/output
 
       - name: Upload .deb packages as artifact
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v4
         with:
           name: built-debs
-          path: packaging/xptc/*.deb
+          path: packaging/output/*.deb
