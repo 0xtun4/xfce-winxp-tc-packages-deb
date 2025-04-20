@@ -46,8 +46,8 @@ jobs:
       - name: Collect .deb packages from output
         run: |
           mkdir -p packaging/output
-          cd packaging/xptc 
-          cp {} packaging/output/ \;
+          find packaging/xptc -name '*.deb' -exec cp {} packaging/output/ \;
+
 
       - name: List built packages
         run: ls -lh packaging/output
