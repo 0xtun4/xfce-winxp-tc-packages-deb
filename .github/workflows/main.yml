@@ -20,7 +20,23 @@ jobs:
         run: |
           cd packaging
           sudo apt-get update
-          sudo apt-get install -y $(./chkdeps.sh -l | cut -d':' -f2 | tr '\n' ' ')
+          sudo apt-get install -y $(./chkdeps.sh -l | cut -d':' -f2 | tr '\n' ' ') \
+          libgdk-pixbuf-2.0-dev \
+          libglib2.0-dev \
+          libgtk-3-dev \
+          liblightdm-gobject-1-dev \
+          gettext \
+          x11-apps \
+          ruby-sass \
+          libcanberra-dev \
+          libcanberra-gtk3-dev \
+          libwebkit2gtk-4.1-dev \
+          libzip-dev \
+          libgarcon-1-dev \
+          libgarcon-gtk3-1-dev \
+          libnm-dev \
+          libupower-glib-dev \
+          libpulse-dev
 
       - name: Build project using packaging/buildall.sh
         run: |
