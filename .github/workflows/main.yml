@@ -1,0 +1,42 @@
+name: Build DEB Package with /packaging
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make packaging scripts executable
+        run: chmod +x packaging/*.sh
+
+      - name: Install dependencies from chkdeps.sh
+        run: |
+          cd packaging
+          sudo apt update
+          sudo apt install -y $(./chkdeps.sh -l | cut -d':' -f2 | tr '\n' ' ')
+
+      - name: Build project using packaging/buildall.sh
+        run: |
+          cd packaging
+          ./buildall.sh
+
+      - name: Collect .deb packages from output
+        run: |
+          mkdir -p packaging/output
+          find packaging/xptc -type f -name "*.deb" -exec cp {} packaging/output/ \;
+
+      - name: List built packages
+        run: ls -lh packaging/output
+
+      - name: Upload .deb packages as artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: built-debs
+          path: packaging/output/*.deb
