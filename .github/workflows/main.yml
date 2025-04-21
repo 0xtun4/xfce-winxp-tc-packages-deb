@@ -20,7 +20,7 @@ jobs:
         run: |
           cd packaging
           sudo apt-get update
-          sudo apt-get install -y $(./chkdeps.sh -l | cut -d':' -f2 | tr '\n' ' ') \
+          sudo apt-get install -y \
           libgdk-pixbuf-2.0-dev \
           libglib2.0-dev \
           libgtk-3-dev \
@@ -43,6 +43,7 @@ jobs:
         run: |
           cd packaging
           ./buildall.sh -t deb
+          
       - name: Collect .deb packages from output
         run: |
           mkdir -p packaging/output
