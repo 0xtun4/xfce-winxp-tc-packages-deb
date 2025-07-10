@@ -2,6 +2,7 @@ base/bootvid
 base/bldtag
 base/logonui
 base/regsvc
+base/smss
 cursors/no-shadow/standard
 cursors/with-shadow/standard
 fonts
@@ -17,6 +18,7 @@ shell/cpl/desk
 shell/cpl/printers
 shell/cpl/sysdm
 shell/desktop
+shell/exitwin
 shell/explorer
 shell/run
 shell/shext/zip
@@ -24,3 +26,4 @@ shell/taskband
 shell/winver
 wallpapers
 windows/notepad
+windows/taskmgr

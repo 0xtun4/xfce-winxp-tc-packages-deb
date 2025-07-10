@@ -32,6 +32,8 @@ add_library(
     src/action.c
     public/desktop.h
     src/desktop.c
+    public/errors.h
+    src/errors.c
     public/exec.h
     src/exec.c
     public/mime.h

@@ -1,8 +1,6 @@
 #ifndef __INTAPI_H__
 #define __INTAPI_H__
 
-#include <glib.h>
-
 //
 // PUBLIC CONSTANTS
 //
