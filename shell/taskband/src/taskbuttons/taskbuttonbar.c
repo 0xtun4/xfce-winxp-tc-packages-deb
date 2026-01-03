@@ -129,6 +129,7 @@ static void taskbutton_bar_init(
         window_monitor_init_management(GTK_CONTAINER(self));
 
     gtk_widget_set_has_window(GTK_WIDGET(self), FALSE);
+    gtk_widget_set_hexpand(GTK_WIDGET(self), TRUE);
 
     wintc_widget_add_style_class(GTK_WIDGET(self), "wintc-taskbuttons");
 
@@ -367,9 +368,10 @@ static void taskbutton_bar_size_allocate(
             &button_margins
         );
 
-        accum_width += TASKBUTTON_MIN_WIDTH +
-                       button_margins.left  +
-                       button_margins.right;
+        accum_margins += button_margins.left + button_margins.right;
+        accum_width   += TASKBUTTON_MIN_WIDTH +
+                         button_margins.left  +
+                         button_margins.right;
 
         if (accum_width > allocation->width)
         {

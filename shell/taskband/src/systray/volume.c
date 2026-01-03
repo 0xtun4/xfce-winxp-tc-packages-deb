@@ -4,22 +4,23 @@
 #include <gtk/gtk.h>
 #include <wintc/comgtk.h>
 #include <wintc/shelldpa.h>
+#include <wintc/shellext.h>
 #include <wintc/sndapi.h>
 
-#include "behaviour.h"
+#include "../intapi.h"
+#include "icon.h"
 #include "volume.h"
 
 //
 // GTK OOP CLASS/INSTANCE DEFINITIONS
 //
-struct _WinTCNotificationVolumeClass
-{
-    WinTCNotificationBehaviourClass __parent__;
-};
-
 struct _WinTCNotificationVolume
 {
-    WinTCNotificationBehaviour __parent__;
+    WinTCShextUIController __parent__;
+
+    // UI
+    //
+    GtkWidget* notif_icon;
 
     GtkWidget* popup_volmgmt;
 
@@ -66,7 +67,7 @@ static void on_snd_output_volume_changed(
     gpointer           user_data
 );
 
-static gboolean on_widget_notif_button_press_event(
+static gboolean on_notif_icon_button_press_event(
     GtkWidget*      self,
     GdkEventButton* event,
     gpointer        user_data
@@ -92,7 +93,7 @@ static void on_scale_volume_value_changed(
 G_DEFINE_TYPE(
     WinTCNotificationVolume,
     wintc_notification_volume,
-    WINTC_TYPE_NOTIFICATION_BEHAVIOUR
+    WINTC_TYPE_SHEXT_UI_CONTROLLER
 )
 
 static void wintc_notification_volume_class_init(
@@ -143,15 +144,22 @@ static void wintc_notification_volume_constructed(
     GObject* object
 )
 {
-    WinTCNotificationVolume*    volume    =
-        WINTC_NOTIFICATION_VOLUME(object);
-    WinTCNotificationBehaviour* behaviour =
-        WINTC_NOTIFICATION_BEHAVIOUR(volume);
+    WinTCNotificationVolume* volume = WINTC_NOTIFICATION_VOLUME(object);
+
+    volume->notif_icon =
+        wintc_ishext_ui_host_get_ext_widget(
+            wintc_shext_ui_controller_get_ui_host(
+                WINTC_SHEXT_UI_CONTROLLER(object)
+            ),
+            WINTC_NOTIFAREA_HOSTEXT_ICON,
+            WINTC_TYPE_NOTIF_AREA_ICON,
+            object
+        );
 
     // Connect up to the notification icon widget
     // 
     volume->popup_volmgmt =
-        wintc_dpa_create_popup(behaviour->widget_notif, FALSE);
+        wintc_dpa_create_popup(volume->notif_icon, FALSE);
 
     volume->box_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     volume->check_mute    = gtk_check_button_new_with_label("Mute");
@@ -163,6 +171,7 @@ static void wintc_notification_volume_constructed(
                             );
 
     gtk_scale_set_draw_value(GTK_SCALE(volume->scale_volume), FALSE);
+    gtk_range_set_increments(GTK_RANGE(volume->scale_volume), 0.05f, 0.1f);
     gtk_range_set_inverted(GTK_RANGE(volume->scale_volume), TRUE);
 
     wintc_widget_add_style_class(volume->popup_volmgmt, "wintc-volmgmt");
@@ -214,9 +223,9 @@ static void wintc_notification_volume_constructed(
     );
 
     g_signal_connect(
-        behaviour->widget_notif,
+        volume->notif_icon,
         "button-press-event",
-        G_CALLBACK(on_widget_notif_button_press_event),
+        G_CALLBACK(on_notif_icon_button_press_event),
         object
     );
 
@@ -251,22 +260,6 @@ static void wintc_notification_volume_constructed(
 }
 
 //
-// PUBLIC FUNCTIONS
-//
-WinTCNotificationVolume* wintc_notification_volume_new(
-    GtkWidget* widget_notif
-)
-{
-    return WINTC_NOTIFICATION_VOLUME(
-        g_object_new(
-            WINTC_TYPE_NOTIFICATION_VOLUME,
-            "widget-notif", widget_notif,
-            NULL
-        )
-    );
-}
-
-//
 // PRIVATE FUNCTIONS
 //
 static void wintc_notification_volume_set_have_device(
@@ -278,10 +271,9 @@ static void wintc_notification_volume_set_have_device(
 
     if (!have_device)
     {
-        g_object_set(
-            volume,
-            "icon-name", "audio-volume-muted",
-            NULL
+        wintc_notif_area_icon_set_icon_name(
+            WINTC_NOTIF_AREA_ICON(volume->notif_icon),
+            "audio-volume-muted"
         );
     }
 }
@@ -364,10 +356,9 @@ static void on_snd_output_muted_changed(
     );
     volume->syncing_state = FALSE;
 
-    g_object_set(
-        volume,
-        "icon-name", icon_name,
-        NULL
+    wintc_notif_area_icon_set_icon_name(
+        WINTC_NOTIF_AREA_ICON(volume->notif_icon),
+        icon_name
     );
 }
 
@@ -389,8 +380,8 @@ static void on_snd_output_volume_changed(
     volume->syncing_state = FALSE;
 }
 
-static gboolean on_widget_notif_button_press_event(
-    GtkWidget* self,
+static gboolean on_notif_icon_button_press_event(
+    WINTC_UNUSED(GtkWidget* self),
     WINTC_UNUSED(GdkEventButton* event),
     gpointer   user_data
 )
@@ -400,7 +391,7 @@ static gboolean on_widget_notif_button_press_event(
 
     wintc_dpa_show_popup(
         volume->popup_volmgmt,
-        self
+        volume->notif_icon
     );
 
     return TRUE;

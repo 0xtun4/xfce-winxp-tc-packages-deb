@@ -30,6 +30,7 @@ static WinTCShextViewItem s_desktop_items[] = {
         "computer",
         FALSE,
         0,
+        WINTC_SHEXT_VIEW_ITEM_DEFAULT,
         NULL
     },
     {
@@ -37,6 +38,7 @@ static WinTCShextViewItem s_desktop_items[] = {
         "folder-documents",
         FALSE,
         0,
+        WINTC_SHEXT_VIEW_ITEM_DEFAULT,
         NULL
     },
     {
@@ -44,14 +46,16 @@ static WinTCShextViewItem s_desktop_items[] = {
         "network-workgroup",
         FALSE,
         0,
-        NULL
+        WINTC_SHEXT_VIEW_ITEM_DEFAULT,
+        NULL,
     },
     {
         "Recycle Bin",
         "user-trash",
         FALSE,
         0,
-        NULL
+        WINTC_SHEXT_VIEW_ITEM_DEFAULT,
+        NULL,
     }
 };
 
@@ -75,10 +79,18 @@ static gboolean wintc_sh_view_desktop_activate_item(
     WinTCShextPathInfo* path_info,
     GError**            error
 );
+static gint wintc_sh_view_desktop_compare_items(
+    WinTCIShextView* view,
+    guint            item_hash1,
+    guint            item_hash2
+);
 static const gchar* wintc_sh_view_desktop_get_display_name(
     WinTCIShextView* view
 );
 static const gchar* wintc_sh_view_desktop_get_icon_name(
+    WinTCIShextView* view
+);
+static GList* wintc_sh_view_desktop_get_items(
     WinTCIShextView* view
 );
 static GMenuModel* wintc_sh_view_desktop_get_operations_for_item(
@@ -197,8 +209,10 @@ static void wintc_sh_view_desktop_ishext_view_interface_init(
 )
 {
     iface->activate_item           = wintc_sh_view_desktop_activate_item;
+    iface->compare_items           = wintc_sh_view_desktop_compare_items;
     iface->get_display_name        = wintc_sh_view_desktop_get_display_name;
     iface->get_icon_name           = wintc_sh_view_desktop_get_icon_name;
+    iface->get_items               = wintc_sh_view_desktop_get_items;
     iface->get_operations_for_item =
         wintc_sh_view_desktop_get_operations_for_item;
     iface->get_operations_for_view =
@@ -268,6 +282,16 @@ static gboolean wintc_sh_view_desktop_activate_item(
     return TRUE;
 }
 
+static gint wintc_sh_view_desktop_compare_items(
+    WINTC_UNUSED(WinTCIShextView* view),
+    WINTC_UNUSED(guint            item_hash1),
+    WINTC_UNUSED(guint            item_hash2)
+)
+{
+    // FIXME: Proper implementation
+    return -1;
+}
+
 static const gchar* wintc_sh_view_desktop_get_display_name(
     WINTC_UNUSED(WinTCIShextView* view)
 )
@@ -281,6 +305,13 @@ static const gchar* wintc_sh_view_desktop_get_icon_name(
 )
 {
     return "user-desktop";
+}
+
+static GList* wintc_sh_view_desktop_get_items(
+    WINTC_UNUSED(WinTCIShextView* view)
+)
+{
+    return g_hash_table_get_values(s_desktop_map);
 }
 
 static GMenuModel* wintc_sh_view_desktop_get_operations_for_item(

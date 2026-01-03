@@ -107,6 +107,18 @@ gboolean wintc_ishext_view_activate_item(
     );
 }
 
+gint wintc_ishext_view_compare_items(
+    WinTCIShextView* view,
+    guint            item_hash1,
+    guint            item_hash2
+)
+{
+    WinTCIShextViewInterface* iface =
+        WINTC_ISHEXT_VIEW_GET_IFACE(view);
+
+    return iface->compare_items(view, item_hash1, item_hash2);
+}
+
 const gchar* wintc_ishext_view_get_display_name(
     WinTCIShextView* view
 )
@@ -125,6 +137,16 @@ const gchar* wintc_ishext_view_get_icon_name(
         WINTC_ISHEXT_VIEW_GET_IFACE(view);
 
     return iface->get_icon_name(view);
+}
+
+GList* wintc_ishext_view_get_items(
+    WinTCIShextView* view
+)
+{
+    WinTCIShextViewInterface* iface =
+        WINTC_ISHEXT_VIEW_GET_IFACE(view);
+
+    return iface->get_items(view);
 }
 
 GMenuModel* wintc_ishext_view_get_operations_for_item(
@@ -258,9 +280,121 @@ void _wintc_ishext_view_refreshing(
     );
 }
 
+// HACKY SORT FUNC
+static WinTCIShextView* S_CUR_VIEW_FOR_SORTING = NULL;
+
+gint _wintc_ishext_view_sort_func(
+    gconstpointer item_hash1,
+    gconstpointer item_hash2
+)
+{
+    if (!S_CUR_VIEW_FOR_SORTING)
+    {
+        g_critical("%s", "shellext: attempting to sort with no view!");
+        return 0;
+    }
+
+    return wintc_ishext_view_compare_items(
+        S_CUR_VIEW_FOR_SORTING,
+        GPOINTER_TO_UINT(item_hash1),
+        GPOINTER_TO_UINT(item_hash2)
+    );
+}
+
+GCompareFunc wintc_ishext_view_get_sort_func(
+    WinTCIShextView* view
+)
+{
+    //
+    // FIXME: This is NOT thread-safe!!
+    //
+    S_CUR_VIEW_FOR_SORTING = view;
+
+    return ((GCompareFunc) _wintc_ishext_view_sort_func);
+}
+// END HACKY SORT FUNC
+
+void wintc_shext_path_info_demangle_uri(
+    WinTCShextPathInfo* path_info,
+    const gchar*        uri
+)
+{
+    //
+    // Fun stuff! There's a bunch of 'special' shell stuff we cram into URIs
+    // that aren't strictly valid... but they make sense to us -- this function
+    // 'demangles' the special sauce back into a valid WinTCShextPathInfo
+    //
+    // This is useful for handling GApplication::open when you might expect to
+    // handle a path incoming from WinTC
+    //
+
+    //
+    // STEP 1: Check if this is a GUID path
+    //
+    const gchar* p_guid_str = strstr(uri, "::%7B");
+
+    if (p_guid_str)
+    {
+        const gchar* p_end_guid = strstr(p_guid_str, "%7D");
+
+        if (p_end_guid)
+        {
+            gchar* guid_escaped = wintc_substr(p_guid_str, p_end_guid + 3);
+
+            path_info->base_path =
+                g_uri_unescape_string(guid_escaped, NULL);
+
+            g_free(guid_escaped);
+        }
+    }
+
+    //
+    // STEP 2: Check if there's an extended path
+    //
+    const gchar* p_ext_delim = strstr(uri, "??");
+
+    if (p_ext_delim)
+    {
+        if (!path_info->base_path)
+        {
+            path_info->base_path =
+                wintc_substr(uri, p_ext_delim);
+        }
+
+        path_info->extended_path =
+            wintc_substr(p_ext_delim + 2, NULL);
+    }
+
+    //
+    // STEP 3: If we still have no path up to this point, just put the whole
+    //         thing in base_path and pass it through as-is
+    //
+    if (!path_info->base_path)
+    {
+        path_info->base_path = g_strdup(uri);
+    }
+}
+
+gchar* wintc_shext_path_info_get_as_single_path(
+    WinTCShextPathInfo* path_info
+)
+{
+    if (path_info->extended_path)
+    {
+        return
+            g_strdup_printf(
+                "%s??%s",
+                path_info->base_path,
+                path_info->extended_path
+            );
+    }
+
+    return g_strdup(path_info->base_path);
+}
+
 void wintc_shext_path_info_copy(
-    WinTCShextPathInfo* dst,
-    WinTCShextPathInfo* src
+    WinTCShextPathInfo*       dst,
+    const WinTCShextPathInfo* src
 )
 {
     wintc_shext_path_info_free_data(dst);
@@ -276,6 +410,14 @@ void wintc_shext_path_info_copy(
     {
         dst->extended_path = g_strdup(src->extended_path);
     }
+}
+
+void wintc_shext_path_info_free(
+    WinTCShextPathInfo* path_info
+)
+{
+    wintc_shext_path_info_free_data(path_info);
+    g_free(path_info);
 }
 
 void wintc_shext_path_info_free_data(

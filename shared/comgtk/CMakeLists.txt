@@ -37,6 +37,7 @@ add_library(
     public/accelerator.h
     src/application.c
     public/application.h
+    public/backcompat.h
     src/builder.c
     public/builder.h
     public/debug.h
@@ -78,6 +79,8 @@ add_library(
     public/strings.h
     src/styles.c
     public/styles.h
+    src/treemodel.c
+    public/treemodel.h
     src/version.c
     public/version.h
     src/window.c

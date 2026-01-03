@@ -24,8 +24,9 @@ struct _WinTCExplorerApplication
 
     // Application state
     //
-    WinTCExplorerLoader* exp_loader;
-    WinTCShextHost*      shext_host;
+    WinTCExplorerLoader*  exp_loader;
+    WinTCShFolderOptions* fldr_opts;
+    WinTCShextHost*       shext_host;
 };
 
 //
@@ -132,6 +133,7 @@ static void wintc_explorer_application_dispose(
         WINTC_EXPLORER_APPLICATION(object);
 
     g_clear_object(&(explorer_app->shext_host));
+    g_clear_object(&(explorer_app->fldr_opts));
     g_clear_object(&(explorer_app->exp_loader));
 
     (G_OBJECT_CLASS(wintc_explorer_application_parent_class))
@@ -149,6 +151,7 @@ static void wintc_explorer_application_activate(
         wintc_explorer_window_new(
             explorer_app,
             explorer_app->shext_host,
+            explorer_app->fldr_opts,
             explorer_app->exp_loader,
             NULL
         );
@@ -237,6 +240,7 @@ static void wintc_explorer_application_open(
         GtkWidget* wnd  = wintc_explorer_window_new(
                               explorer_app,
                               explorer_app->shext_host,
+                              explorer_app->fldr_opts,
                               explorer_app->exp_loader,
                               uri
                           );
@@ -256,6 +260,38 @@ static void wintc_explorer_application_startup(
 
     (G_APPLICATION_CLASS(wintc_explorer_application_parent_class))
         ->startup(application);
+
+    // Install styles
+    //
+    GtkCssProvider* css_provider   = gtk_css_provider_new();
+    GtkCssProvider* css_provider_p = gtk_css_provider_new();
+
+    gtk_css_provider_load_from_resource(
+        css_provider,
+        "/uk/oddmatics/wintc/explorer/appstyles.css"
+    );
+    gtk_css_provider_load_from_resource(
+        css_provider_p,
+        "/uk/oddmatics/wintc/explorer/appstyles_p.css"
+    );
+
+    gtk_style_context_add_provider_for_screen(
+        gdk_screen_get_default(),
+        GTK_STYLE_PROVIDER(css_provider),
+        GTK_STYLE_PROVIDER_PRIORITY_FALLBACK
+    );
+    gtk_style_context_add_provider_for_screen(
+        gdk_screen_get_default(),
+        GTK_STYLE_PROVIDER(css_provider_p),
+        GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
+
+    // Install icon resource path
+    //
+    gtk_icon_theme_add_resource_path(
+        gtk_icon_theme_get_default(),
+        "/uk/oddmatics/wintc/explorer"
+    );
 
     // Init comctl
     //
@@ -279,6 +315,10 @@ static void wintc_explorer_application_startup(
         WINTC_SHEXT_LOAD_DEFAULT,
         NULL
     );
+
+    // Create folder options
+    //
+    explorer_app->fldr_opts = wintc_sh_folder_options_new();
 }
 
 //

@@ -32,16 +32,32 @@ WinTCWndMgmtScreen* (*wintc_wndmgmt_screen_get_default) (void) = NULL;
 
 void (*wintc_wndmgmt_shutdown) (void) = NULL;
 
+void (*wintc_wndmgmt_window_close) (
+    WinTCWndMgmtWindow* window,
+    guint64             timestamp
+) = NULL;
 GdkPixbuf* (*wintc_wndmgmt_window_get_mini_icon) (
     WinTCWndMgmtWindow* window
 ) = NULL;
 gchar* (*wintc_wndmgmt_window_get_name) (
     WinTCWndMgmtWindow* window
 ) = NULL;
+gboolean (*wintc_wndmgmt_window_is_maximized) (
+    WinTCWndMgmtWindow* window
+) = NULL;
+gboolean (*wintc_wndmgmt_window_is_minimized) (
+    WinTCWndMgmtWindow* window
+) = NULL;
 gboolean (*wintc_wndmgmt_window_is_skip_tasklist) (
     WinTCWndMgmtWindow* window
 ) = NULL;
+void (*wintc_wndmgmt_window_maximize) (
+    WinTCWndMgmtWindow* window
+) = NULL;
 void (*wintc_wndmgmt_window_minimize) (
+    WinTCWndMgmtWindow* window
+) = NULL;
+void (*wintc_wndmgmt_window_unmaximize) (
     WinTCWndMgmtWindow* window
 ) = NULL;
 void (*wintc_wndmgmt_window_unminimize) (
@@ -178,6 +194,26 @@ void wintc_dpa_show_popup(
             &x,
             &y
         );
+
+        // Adjust pos if the window doesn't have its own GDK window
+        //
+        if (!gtk_widget_get_has_window(owner))
+        {
+            gint off_x = 0;
+            gint off_y = 0;
+
+            gtk_widget_translate_coordinates(
+                owner,
+                GTK_WIDGET(wintc_widget_get_toplevel_window(owner)),
+                0,
+                0,
+                &off_x,
+                &off_y
+            );
+
+            x += off_x;
+            y += off_y;
+        }
 
         gtk_window_move(
             GTK_WINDOW(popup),

@@ -38,10 +38,18 @@ static gboolean wintc_sh_view_cpl_activate_item(
     WinTCShextPathInfo* path_info,
     GError**            error
 );
+static gint wintc_sh_view_cpl_compare_items(
+    WinTCIShextView* view,
+    guint            item_hash1,
+    guint            item_hash2
+);
 static const gchar* wintc_sh_view_cpl_get_display_name(
     WinTCIShextView* view
 );
 static const gchar* wintc_sh_view_cpl_get_icon_name(
+    WinTCIShextView* view
+);
+static GList* wintc_sh_view_cpl_get_items(
     WinTCIShextView* view
 );
 static GMenuModel* wintc_sh_view_cpl_get_operations_for_item(
@@ -73,6 +81,11 @@ static WinTCShextOperation* wintc_sh_view_cpl_spawn_operation(
     gint             operation_id,
     GList*           targets,
     GError**         error
+);
+
+static WinTCShextViewItem* wintc_sh_view_cpl_get_view_item(
+    WinTCShViewCpl* view_cpl,
+    guint           item_hash
 );
 
 //
@@ -131,8 +144,10 @@ static void wintc_sh_view_cpl_ishext_view_interface_init(
 )
 {
     iface->activate_item           = wintc_sh_view_cpl_activate_item;
+    iface->compare_items           = wintc_sh_view_cpl_compare_items;
     iface->get_display_name        = wintc_sh_view_cpl_get_display_name;
     iface->get_icon_name           = wintc_sh_view_cpl_get_icon_name;
+    iface->get_items               = wintc_sh_view_cpl_get_items;
     iface->get_operations_for_item = wintc_sh_view_cpl_get_operations_for_item;
     iface->get_operations_for_view = wintc_sh_view_cpl_get_operations_for_view;
     iface->get_parent_path         = wintc_sh_view_cpl_get_parent_path;
@@ -206,11 +221,7 @@ static gboolean wintc_sh_view_cpl_activate_item(
     WinTCShCplApplet*   applet;
     WinTCShextViewItem* item;
 
-    item   = (WinTCShextViewItem*)
-                 g_hash_table_lookup(
-                     view_cpl->map_items,
-                     GUINT_TO_POINTER(item_hash)
-                 );
+    item   = wintc_sh_view_cpl_get_view_item(view_cpl, item_hash);
     applet = (WinTCShCplApplet*) item->priv;
 
     if (wintc_sh_cpl_applet_is_executable(applet))
@@ -221,6 +232,22 @@ static gboolean wintc_sh_view_cpl_activate_item(
     path_info->base_path = g_strdup(applet->exec);
 
     return TRUE;
+}
+
+static gint wintc_sh_view_cpl_compare_items(
+    WinTCIShextView* view,
+    guint            item_hash1,
+    guint            item_hash2
+)
+{
+    WinTCShViewCpl* view_cpl = WINTC_SH_VIEW_CPL(view);
+
+    WinTCShextViewItem* item1 =
+        wintc_sh_view_cpl_get_view_item(view_cpl, item_hash1);
+    WinTCShextViewItem* item2 =
+        wintc_sh_view_cpl_get_view_item(view_cpl, item_hash2);
+
+    return wintc_shext_view_item_compare_by_name(item1, item2);
 }
 
 static const gchar* wintc_sh_view_cpl_get_display_name(
@@ -237,6 +264,15 @@ static const gchar* wintc_sh_view_cpl_get_icon_name(
 )
 {
     return "preferences-other";
+}
+
+static GList* wintc_sh_view_cpl_get_items(
+    WinTCIShextView* view
+)
+{
+    WinTCShViewCpl* view_cpl = WINTC_SH_VIEW_CPL(view);
+
+    return g_hash_table_get_values(view_cpl->map_items);
 }
 
 static GMenuModel* wintc_sh_view_cpl_get_operations_for_item(
@@ -378,4 +414,20 @@ WinTCIShextView* wintc_sh_view_cpl_new(void)
             NULL
         )
     );
+}
+
+//
+// PRIVATE FUNCTIONS
+//
+static WinTCShextViewItem* wintc_sh_view_cpl_get_view_item(
+    WinTCShViewCpl* view_cpl,
+    guint           item_hash
+)
+{
+    return
+        (WinTCShextViewItem*)
+        g_hash_table_lookup(
+            view_cpl->map_items,
+            GUINT_TO_POINTER(item_hash)
+        );
 }

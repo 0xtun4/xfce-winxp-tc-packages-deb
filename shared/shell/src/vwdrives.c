@@ -24,8 +24,22 @@ static GHashTable* s_drives_map = NULL;
 // FIXME: Temporary - only item is the drive root atm
 //
 static WinTCShextViewItem s_temp_items[] = {
-    { "/",             "drive-harddisk",    FALSE, 0, "file:///" },
-    { "Control Panel", "preferences-other", FALSE, 0, NULL       }
+    {
+        "/",
+        "drive-harddisk",
+        FALSE,
+        0,
+        WINTC_SHEXT_VIEW_ITEM_DEFAULT,
+        "file:///"
+    },
+    {
+        "Control Panel",
+        "preferences-other",
+        FALSE,
+        0,
+        WINTC_SHEXT_VIEW_ITEM_DEFAULT,
+        NULL
+    }
 };
 
 //
@@ -48,10 +62,18 @@ static gboolean wintc_sh_view_drives_activate_item(
     WinTCShextPathInfo* path_info,
     GError**            error
 );
+static gint wintc_sh_view_drives_compare_items(
+    WinTCIShextView* view,
+    guint            item_hash1,
+    guint            item_hash2
+);
 static const gchar* wintc_sh_view_drives_get_display_name(
     WinTCIShextView* view
 );
 static const gchar* wintc_sh_view_drives_get_icon_name(
+    WinTCIShextView* view
+);
+static GList* wintc_sh_view_drives_get_items(
     WinTCIShextView* view
 );
 static GMenuModel* wintc_sh_view_drives_get_operations_for_item(
@@ -161,8 +183,10 @@ static void wintc_sh_view_drives_ishext_view_interface_init(
 )
 {
     iface->activate_item           = wintc_sh_view_drives_activate_item;
+    iface->compare_items           = wintc_sh_view_drives_compare_items;
     iface->get_display_name        = wintc_sh_view_drives_get_display_name;
     iface->get_icon_name           = wintc_sh_view_drives_get_icon_name;
+    iface->get_items               = wintc_sh_view_drives_get_items;
     iface->get_operations_for_item =
         wintc_sh_view_drives_get_operations_for_item;
     iface->get_operations_for_view =
@@ -228,6 +252,16 @@ static gboolean wintc_sh_view_drives_activate_item(
     return TRUE;
 }
 
+static gint wintc_sh_view_drives_compare_items(
+    WINTC_UNUSED(WinTCIShextView* view),
+    WINTC_UNUSED(guint            item_hash1),
+    WINTC_UNUSED(guint            item_hash2)
+)
+{
+    // FIXME: Proper implementation
+    return -1;
+}
+
 static const gchar* wintc_sh_view_drives_get_display_name(
     WINTC_UNUSED(WinTCIShextView* view)
 )
@@ -242,6 +276,13 @@ static const gchar* wintc_sh_view_drives_get_icon_name(
 )
 {
     return "computer";
+}
+
+static GList* wintc_sh_view_drives_get_items(
+    WINTC_UNUSED(WinTCIShextView* view)
+)
+{
+    return g_hash_table_get_values(s_drives_map);
 }
 
 static GMenuModel* wintc_sh_view_drives_get_operations_for_item(

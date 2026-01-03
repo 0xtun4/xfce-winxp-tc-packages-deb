@@ -42,10 +42,18 @@ struct _WinTCIShextViewInterface
         GError**            error
     );
 
+    gint (*compare_items) (
+        WinTCIShextView* view,
+        guint            item_hash1,
+        guint            item_hash2
+    );
     const gchar* (*get_display_name) (
         WinTCIShextView* view
     );
     const gchar* (*get_icon_name) (
+        WinTCIShextView* view
+    );
+    GList* (*get_items) (
         WinTCIShextView* view
     );
     GMenuModel* (*get_operations_for_item) (
@@ -92,6 +100,11 @@ gboolean wintc_ishext_view_activate_item(
     GError**            error
 );
 
+gint wintc_ishext_view_compare_items(
+    WinTCIShextView* view,
+    guint            item_hash1,
+    guint            item_hash2
+);
 void wintc_ishext_view_refresh_items(
     WinTCIShextView* view
 );
@@ -100,6 +113,9 @@ const gchar* wintc_ishext_view_get_display_name(
     WinTCIShextView* view
 );
 const gchar* wintc_ishext_view_get_icon_name(
+    WinTCIShextView* view
+);
+GList* wintc_ishext_view_get_items(
     WinTCIShextView* view
 );
 GMenuModel* wintc_ishext_view_get_operations_for_item(
@@ -145,9 +161,26 @@ void _wintc_ishext_view_refreshing(
     WinTCIShextView* view
 );
 
+GCompareFunc wintc_ishext_view_get_sort_func(
+    WinTCIShextView* view
+);
+
+// WinTCShextPathInfo methods
+//
+void wintc_shext_path_info_demangle_uri(
+    WinTCShextPathInfo* path_info,
+    const gchar*        uri
+);
+gchar* wintc_shext_path_info_get_as_single_path(
+    WinTCShextPathInfo* path_info
+);
+
 void wintc_shext_path_info_copy(
-    WinTCShextPathInfo* dst,
-    WinTCShextPathInfo* src
+    WinTCShextPathInfo*       dst,
+    const WinTCShextPathInfo* src
+);
+void wintc_shext_path_info_free(
+    WinTCShextPathInfo* path_info
 );
 void wintc_shext_path_info_free_data(
     WinTCShextPathInfo* path_info
