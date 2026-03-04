@@ -9,6 +9,15 @@ gdk-pixbuf2-->bt-->gdk-pixbuf2-devel
 gdk-pixbuf2-->rt-->gdk-pixbuf2
 glib2-->bt-->glib2-devel
 glib2-->rt-->glib2
+gstreamer-->bt-->gstreamer1-devel
+gstreamer-->rt-->gstreamer1
+gstreamer-alsa-->bt,rt-->NULL
+gstreamer-gtk3-->bt-->NULL
+gstreamer-gtk3-->rt-->gstreamer1-plugins-good-gtk
+gstreamer-pb-->bt-->gstreamer1-plugins-base-devel
+gstreamer-pb-->rt-->gstreamer1-plugins-base
+gstreamer-pu-->bt-->NULL
+gstreamer-pu-->rt-->gstreamer1-plugins-ugly-free
 gtk3-->bt-->gtk3-devel
 gtk3-->rt-->gtk3
 gtk4-->bt-->gtk4-devel
@@ -34,6 +43,7 @@ webkitgtk-->rt-->webkit2gtk4.1
 wintc-comctl-->bt,rt-->wintc-comctl
 wintc-comgtk-->bt,rt-->wintc-comgtk
 wintc-exec-->bt,rt-->wintc-exec
+wintc-launch-->bt,rt-->wintc-launch
 wintc-msgina-->bt,rt-->wintc-msgina
 wintc-registry-->bt,rt-->wintc-registry
 wintc-shcommon-->bt,rt-->wintc-shcommon
@@ -44,6 +54,7 @@ wintc-shlang-->bt,rt-->wintc-shlang
 wintc-sndapi-->bt,rt-->wintc-sndapi
 wintc-syscfg-->bt,rt-->wintc-syscfg
 wintc-winbrand-->bt,rt-->wintc-winbrand
+wintc-wizard97-->bt,rt-->wintc-wizard97
 xcursorgen-->bt,rt-->xcursorgen
 xdg-mime-->bt,rt-->xdg-utils
 xml2-->bt-->libxml2-devel

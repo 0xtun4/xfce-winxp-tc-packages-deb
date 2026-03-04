@@ -1,17 +1,40 @@
 import curses
+import math
 import os
+import shutil
+import subprocess
 
 from wsetup_brand  import *
+from wsetup_pkg    import *
 from wsetup_screen import *
+
+def wsetup_step_error(stdscr, errstr):
+    wsetup_screen_clear(stdscr)
+
+    wsetup_screen_write_simple(
+        stdscr,
+        0, 0,
+        f"{errstr}\n\nSetup cannot continue. Press any key to exit.",
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+    )
+
+    wsetup_screen_write_instructions(
+        stdscr,
+        []
+    )
+
+    stdscr.getch()
+
+    return 0
 
 def wsetup_step_init(stdscr):
     wsetup_screen_clear(stdscr)
 
     # Check the current distro is one we know about
     #
-    dist_id = os.environ.get("DIST_ID")
+    dist_pkgfmt = os.environ.get("WSETUP_DIST_PKGFMT", "unsupported")
 
-    if dist_id == None or dist_id == "unsupported":
+    if dist_pkgfmt == "unsupported":
         wsetup_screen_write_simple(
             stdscr,
             0, 0,
@@ -23,6 +46,18 @@ def wsetup_step_init(stdscr):
         stdscr.getch()
         return 0
 
+    # Drop the pkgpath file into the setup state
+    #
+    try:
+        wsetup_pkg_prepare_pkgpath()
+    except:
+        return wsetup_step_error(
+            stdscr,
+            "Setup failed to prepare the source directory, please ensure\n" +
+            "your disk is not full and that it is possible to write to\n" +
+            "/var/tmp"
+        )
+
     return 2 # All good
 
 def wsetup_step_beta_notice(stdscr):
@@ -32,7 +67,7 @@ def wsetup_step_beta_notice(stdscr):
         stdscr,
         0, 0,
         "Setup Notification:",
-        curses.color_pair(COLOR_PAIR_BRIGHT_TEXT)
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT) | curses.A_BOLD
     )
 
     wsetup_screen_write_simple(
@@ -80,7 +115,7 @@ def wsetup_step_welcome(stdscr):
         stdscr,
         0, 0,
         "Welcome to Setup.",
-        curses.color_pair(COLOR_PAIR_BRIGHT_TEXT)
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT) | curses.A_BOLD
     )
 
     wsetup_screen_write_simple(
@@ -94,6 +129,7 @@ def wsetup_step_welcome(stdscr):
 
     # TODO: We don't have any 'Recovery Console', left off for now, deal with
     #       in future perhaps
+    #
     wsetup_screen_write_simple(
         stdscr,
         5, 3,
@@ -166,29 +202,6 @@ def wsetup_step_eula(stdscr):
             return 5
 
 def wsetup_step_confirm_system(stdscr):
-    # Ident the distro we found to the user
-    #
-    env_dist_id = os.environ.get("DIST_ID")
-    env_dist_id_ext = os.environ.get("DIST_ID_EXT")
-
-    dist_name = "Unknown distribution"
-
-    if env_dist_id == "archpkg":
-        dist_name = "Arch Linux or derivative"
-    elif env_dist_id == "apk":
-        dist_name = "Alpine Linux"
-    elif env_dist_id == "bsdpkg":
-        dist_name = "FreeBSD"
-    elif env_dist_id == "deb":
-        dist_name = "Debian or derivative"
-    elif env_dist_id == "rpm":
-        dist_name = "Red Hat, Fedora, or other RPM-based distribution"
-    elif env_dist_id == "xbps":
-        if env_dist_id_ext == "glibc":
-            dist_name = "Void Linux (glibc)"
-        elif env_dist_id_ext == "musl":
-            dist_name = "Void Linux (musl)"
-
     # TUI update
     #
     wsetup_screen_clear(stdscr)
@@ -203,7 +216,7 @@ def wsetup_step_confirm_system(stdscr):
     wsetup_screen_write_simple(
         stdscr,
         3, 4,
-        dist_name,
+        os.environ.get("WSETUP_DIST_NAME"),
         curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
     )
     wsetup_screen_write_simple(
@@ -233,4 +246,255 @@ def wsetup_step_confirm_system(stdscr):
         elif user_option == curses.KEY_ENTER or \
              user_option == ord("\n")        or \
              user_option == ord("\r"):
-            return 0 # TODO: Continue to install
+            return 6
+
+def wsetup_step_prep_install(stdscr):
+    wsetup_screen_clear(stdscr)
+
+    # Check package manager works
+    #
+    pkgcmd = ""
+    pkgfmt = os.environ.get("WSETUP_DIST_PKGFMT")
+
+    wsetup_screen_write_instructions(
+        stdscr,
+        [
+            "Updating package manager..."
+        ]
+    )
+
+    stdscr.refresh()
+
+    if pkgfmt == "deb":
+        pkgcmd = "apt update"
+    else:
+        raise Exception(f"No install command for format {pkgfmt}")
+
+    try:
+        subprocess.run(
+            pkgcmd.split(),
+            capture_output=True,
+            check=True
+        )
+    except:
+        return wsetup_step_error(
+            stdscr,
+            "The system package manager failed to update.\n\n" +
+            "Make sure your package manager is able to download from its\n" +
+            "configured sources successfully, then try running Setup again."
+        )
+
+    # Copy complist to tmpdir
+    #
+    setup_root = os.environ.get("SETUPROOT")
+
+    wsetup_screen_write_instructions(
+        stdscr,
+        [
+            "Creating list of files to be copied..."
+        ]
+    )
+
+    try:
+        shutil.copy(
+            f"{setup_root}/setup/complist.ini",
+            os.environ.get("WSETUP_STATE_ROOT")
+        )
+    except:
+        # FIXME: Ditto
+        raise Exception(f"Failed to copy complist.ini to setup state dir")
+
+    return 7
+
+def wsetup_step_install_base(stdscr):
+    wsetup_screen_clear(stdscr)
+
+    wsetup_screen_write_direct(
+        stdscr,
+        wsetup_screen_get_scaled_y(stdscr, WSETUP_MAIN_Y + 3),
+        wsetup_screen_get_scaled_x(stdscr, 40) - 22,
+        "    Please wait while Setup copies files    \n" +
+        "    to the Windows installation folders.    \n" +
+        "This might take several minutes to complete.",
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+    )
+
+    # Main box
+    #
+    box_h = 7
+    box_w = 68
+    box_y = wsetup_screen_get_scaled_y(stdscr, 20)
+    box_x = wsetup_screen_get_scaled_x(stdscr, 40) - int(box_w / 2)
+
+    wsetup_screen_draw_box(
+        stdscr,
+        box_y,
+        box_x,
+        box_h,
+        box_w
+    )
+
+    wsetup_screen_write_direct(
+        stdscr,
+        box_y + 1,
+        box_x + 2,
+        "Setup is copying files...",
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+    )
+    wsetup_screen_write_direct(
+        stdscr,
+        box_y + 2,
+        wsetup_screen_get_scaled_x(stdscr, 40) - 3,
+        "0%",
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+    )
+
+    # Progress box
+    #
+    progbox_h = 3
+    progbox_w = box_w - 10
+    progbox_y = box_y + 3
+    progbox_x = box_x + 5
+
+    wsetup_screen_draw_box(
+        stdscr,
+        progbox_y,
+        progbox_x,
+        progbox_h,
+        progbox_w
+    )
+
+    stdscr.refresh()
+
+    # Install the base packages to get to phase 2
+    #
+    pkgcmd       = ""
+    pkgfmt       = os.environ.get("WSETUP_DIST_PKGFMT")
+    pkgnames_arr = wsetup_pkg_get_pkgnames_basesystem()
+    pkgnames     = " ".join(pkgnames_arr)
+
+    if pkgfmt == "deb":
+        pkgcmd = f"apt-get install -y -o APT::Status-Fd=1 {pkgnames}"
+    else:
+        raise Exception(f"No install command for format {pkgfmt}")
+
+    process = subprocess.Popen(
+            pkgcmd.split(),
+            bufsize=1,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            universal_newlines=True
+        )
+
+    while True:
+        cmd_out = process.stdout.readline()
+
+        if process.poll() is not None:
+            break
+
+        if cmd_out:
+            if pkgfmt == "deb":
+                # Parse apt-get status output
+                #
+                if not cmd_out.startswith("pmstatus"):
+                    continue
+
+                cmd_split = cmd_out.split(":")
+
+                cur_pkg  = cmd_split[1]
+                pct      = float(cmd_split[2])
+                progress = str(int(pct)) + "%"
+
+                if len(cur_pkg) > 16:
+                    cur_pkg = cur_pkg[:16]
+
+                wsetup_screen_write_direct(
+                    stdscr,
+                    box_y + 2,
+                    wsetup_screen_get_scaled_x(stdscr, 40) - 3,
+                    progress,
+                    curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+                )
+                wsetup_screen_draw_bar(
+                    stdscr,
+                    progbox_y + 1,
+                    progbox_x + 1,
+                    math.floor((pct / 100) * (progbox_w - 2))
+                )
+                wsetup_screen_write_status(
+                    stdscr,
+                    "Copying {package: <16}".format(package=cur_pkg)
+                )
+
+                stdscr.refresh()
+
+    if process.returncode != 0:
+        return wsetup_step_error(
+            stdscr,
+            "The system package manager failed to install packages.\n\n" +
+            "This may be an indication that you are missing files from the\n" +
+            "install media, or that the package manager is unable to \n" +
+            "download from network sources."
+        )
+
+    wsetup_screen_write_direct(
+        stdscr,
+        box_y + 2,
+        wsetup_screen_get_scaled_x(stdscr, 40) - 3,
+        "100%",
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+    )
+
+    stdscr.refresh()
+
+    return 8
+
+def wsetup_step_prepare_chain_to_gui(stdscr):
+    wsetup_screen_clear(stdscr)
+
+    # Text for this page
+    #
+    page_text = (
+        "Please wait while Setup initializes your " +
+        WSETUP_BRAND_PRODUCT_NAME +
+        " configuration."
+    )
+
+    wsetup_screen_write_direct(
+        stdscr,
+        8,
+        wsetup_screen_get_scaled_x(stdscr, 40) -
+        wsetup_screen_get_scaled_x(stdscr, int(len(page_text) / 2)),
+        page_text,
+        curses.color_pair(COLOR_PAIR_NORMAL_TEXT)
+    )
+
+    wsetup_screen_write_instructions(
+        stdscr,
+        [
+            "Updating startup environment..."
+        ]
+    )
+
+    stdscr.refresh()
+
+    # Arm graphical mode setup
+    #
+    try:
+        subprocess.run(
+            [ "wsetupx", "--arm" ],
+            capture_output=True,
+            check=True
+        )
+    except:
+        # FIXME: Again, display a proper error in setup
+        raise Exception("Failed to chain graphical phase");
+
+    # FIXME: Should show reboot screen
+    subprocess.run(
+        [ "reboot", "now" ],
+        capture_output=True,
+        check=True
+    )
+
+    return 0

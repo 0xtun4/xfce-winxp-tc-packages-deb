@@ -1,0 +1,15 @@
+bt,rt:glib2
+bt,rt:gstreamer
+rt:gstreamer-alsa
+rt:gstreamer-gtk3
+bt,rt:gstreamer-pb
+rt:gstreamer-pu
+bt,rt:gtk3
+bt,rt:wintc-comctl
+bt,rt:wintc-comgtk
+bt,rt:wintc-exec
+rt:wintc-launch
+bt,rt:wintc-shcommon
+bt,rt:wintc-shelldpa
+bt,rt:wintc-shlang
+bt,rt:xml2

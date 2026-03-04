@@ -48,7 +48,7 @@
             <property name="orientation">vertical</property>
 
             <child>
-              <object class="GtkGrid">
+              <object class="GtkGrid" id="grid-steps">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="orientation">horizontal</property>
@@ -192,12 +192,66 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label">Setup will complete in</property>
+                    <property name="label">Setup will complete in approximately:</property>
+                    <property name="max-width-chars">28</property>
+                    <property name="wrap">True</property>
                     <property name="xalign">0.0</property>
+
+                    <style>
+                      <class name="setup-step-approx" />
+                    </style>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
                     <property name="top-attach">5</property>
+                    <property name="width">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label-approx">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xalign">0.3</property>
+
+                    <style>
+                      <class name="setup-step-approx" />
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">6</property>
+                    <property name="width">2</property>
+                  </packing>
+                </child>
+
+                <child>
+                  <object class="GtkLabel" id="label-progress">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="xalign">0.0</property>
+
+                    <style>
+                      <class name="setup-step-progress" />
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">7</property>
+                    <property name="width">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkProgressBar" id="progress-step">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+
+                    <style>
+                      <class name="setup-step-progress" />
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">8</property>
                     <property name="width">2</property>
                   </packing>
                 </child>
@@ -226,10 +280,9 @@
             <property name="orientation">vertical</property>
 
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="label-billboard-title">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label">Welcome to WinTC Release Preview</property>
                 <property name="max-width-chars">32</property>
                 <property name="wrap">True</property>
                 <property name="xalign">0.0</property>
@@ -245,12 +298,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="label-billboard-body">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label">Thanks for installing and trying out Windows Total Conversion Release Preview! It has been a long road to reach this first test release, and there's still plenty left to do.
-
-Please report any bugs, feedback, or technical contributions you may have as this would be beneficial to improving the project.</property>
                 <property name="max-width-chars">48</property>
                 <property name="wrap">True</property>
                 <property name="xalign">0.0</property>
@@ -288,23 +338,10 @@ Please report any bugs, feedback, or technical contributions you may have as thi
       </packing>
     </child>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="box-bottom">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">horizontal</property>
-
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label">Temp.</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
 
         <style>
           <class name="setup-bottom" />

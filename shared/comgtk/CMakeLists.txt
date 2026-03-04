@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 project(
     libwintc-comgtk
@@ -70,6 +70,8 @@ add_library(
     public/msgbox.h
     src/profile.c
     public/profile.h
+    src/radio.c
+    public/radio.h
     src/regex.c
     public/regex.h
     public/shorthand.h

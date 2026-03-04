@@ -10,6 +10,16 @@ gdk-pixbuf2-->bt-->libgdk-pixbuf-2.0-dev|libgdk-pixbuf2.0-dev
 gdk-pixbuf2-->rt-->libgdk-pixbuf-2.0-0|libgdk-pixbuf2.0-0
 glib2-->bt-->libglib2.0-dev
 glib2-->rt-->libglib2.0-0
+gstreamer-->bt-->libgstreamer1.0-dev
+gstreamer-->rt-->libgstreamer1.0-0
+gstreamer-alsa-->bt-->NULL
+gstreamer-alsa-->rt-->gstreamer1.0-alsa
+gstreamer-gtk3-->bt-->NULL
+gstreamer-gtk3-->rt-->gstreamer1.0-gtk3
+gstreamer-pb-->bt-->libgstreamer-plugins-base1.0-dev
+gstreamer-pb-->rt-->gstreamer1.0-plugins-base
+gstreamer-pu-->bt-->NULL
+gstreamer-pu-->rt-->gstreamer1.0-plugins-ugly
 gtk3-->bt-->libgtk-3-dev
 gtk3-->rt-->libgtk-3-0
 gtk4-->bt-->libgtk-4-dev
@@ -35,6 +45,8 @@ webkitgtk-->rt-->libwebkit2gtk-4.1-0
 wintc-comctl-->bt,rt-->libwintc-comctl
 wintc-comgtk-->bt,rt-->libwintc-comgtk
 wintc-exec-->bt,rt-->libwintc-exec
+wintc-launch-->bt-->NULL
+wintc-launch-->rt-->wintc-launch
 wintc-msgina-->bt,rt-->libwintc-msgina
 wintc-registry-->bt,rt-->libwintc-registry
 wintc-shcommon-->bt,rt-->libwintc-shcommon
@@ -45,9 +57,10 @@ wintc-shlang-->bt,rt-->libwintc-shlang
 wintc-sndapi-->bt,rt-->libwintc-sndapi
 wintc-syscfg-->bt,rt-->libwintc-syscfg
 wintc-winbrand-->bt,rt-->libwintc-winbrand
+wintc-wizard97-->bt,rt-->libwintc-wizard97
 xcursorgen-->bt,rt-->x11-apps
 xdg-mime-->bt,rt-->xdg-utils
 xml2-->bt-->libxml2-dev
-xml2-->rt-->libxml2
+xml2-->rt-->libxml2|libxml2-16
 zip-->bt-->libzip-dev
 zip-->rt-->libzip4|libzip5

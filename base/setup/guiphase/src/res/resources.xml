@@ -12,10 +12,18 @@
     <file>bulldone.png</file>
     <file>bullnull.png</file>
     <file>logo.png</file>
-    <file>throb1.png</file>
-    <file>throb2.png</file>
-    <file>throb3.png</file>
-    <file>throb4.png</file>
+    <file>throbber.png</file>
+
+    <file>admin.png</file>
+    <file>comp.png</file>
+    <file>header.png</file>
+    <file>network.png</file>
+    <file>person.png</file>
+    <file>pidkey.png</file>
+    <file>region.png</file>
+    <file>timedate.png</file>
+    <file>tz.png</file>
+    <file>watermk.png</file>
 
     <!--             -->
     <!-- STYLESHEETS -->
@@ -26,5 +34,15 @@
     <!-- STRUCTURE -->
     <!--           -->
     <file>setupwnd.ui</file>
+
+    <file>perwizp1.ui</file>
+    <file>perwizp2.ui</file>
+    <file>perwizp3.ui</file>
+    <file>perwizp4.ui</file>
+    <file>perwizp5.ui</file>
+
+    <file>netwizp1.ui</file>
+    <file>netwizp2.ui</file>
+    <file>netwizp3.ui</file>
   </gresource>
 </gresources>

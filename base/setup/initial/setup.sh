@@ -11,33 +11,58 @@ export SETUPROOT
 # running distro and its init system before chaining onto the rest of setup
 #
 
-printf "%s\n" "Setup is inspecting your computer's hardware configuration...";
-
 # Probe for Python as we cannot run binaries at this point
 #
 python_path=`which python 2>/dev/null`
 
 if [ $? != 0 ]
 then
-    printf "%s%s\n" \
-        "Your system is missing the Python 3 interpreter, this is required " \
-        "by setup. Setup will now exit.";
-    exit 1;
+    python_path=`which python3 2>/dev/null`
+
+    if [ $? != 0 ]
+    then
+        clear
+        printf "%s%s\n" \
+            "Your system is missing the Python 3 interpreter, this is " \
+            "required by setup. Setup will now exit.";
+        exit 1;
+    fi
 fi
+
+# Spawn the working dir for setup
+#
+WSETUP_STATE_ROOT="/var/tmp/.wintc-setup"
+
+if [ -d "$WSETUP_STATE_ROOT" ]
+then
+    rm -rf $WSETUP_STATE_ROOT
+fi
+
+mkdir -p $WSETUP_STATE_ROOT
+export WSETUP_STATE_ROOT
 
 # Inspect the distro
 #
-. "$SETUPROOT/dal/detect.sh"
-export DIST_ID
-export DIST_ID_EXT
+. "$SETUPROOT/setup/dal/detect.sh"
+export WSETUP_DIST_NAME
+export WSETUP_DIST_PKGFMT
+export WSETUP_DIST_PKGFMT_EXT
 
 # Chain to either text-mode or the setup autorun depending on whether we're
 # under a display manager
 #
 if [ -z "$DISPLAY" ] && [ -z "$WAYLAND_DISPLAY" ]
 then
-    $python_path textmode/main.py;
+    if [ $(id -u) -ne 0 ]
+    then
+        printf "%s\n" "You must be root to run setup."
+        exit 1
+    fi
+
+    clear
+    printf "%s\n" "Setup is inspecting your computer's hardware configuration...";
+
+    $python_path setup/textmode/main.py
 else
-    printf "%s\n" "GUI mode setup is not yet implemented. Sorry!"
-    exit 1
+    $python_path setup/autorun/main.py
 fi

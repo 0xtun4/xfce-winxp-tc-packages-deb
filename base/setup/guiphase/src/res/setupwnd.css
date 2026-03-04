@@ -1,3 +1,8 @@
+*
+{
+    -GtkProgressBar-min-horizontal-bar-width: 1;
+}
+
 .setup-wnd
 {
     background: #4E6FD6;
@@ -34,14 +39,37 @@
     margin-top: 20px;
 }
 
-grid > *
+.setup-steps > grid > *
 {
     margin-top: 10px
 }
 
-grid > label
+.setup-step-complete,
+.setup-step-current,
+.setup-step-approx
 {
     font-weight: bold;
+}
+
+.setup-step-current
+{
+    color: #FF8000;
+}
+
+label.setup-step-progress
+{
+    margin-top: 30px;
+}
+
+.setup-steps progressbar trough
+{
+    background: white;
+    border: 1px solid black;
+}
+
+.setup-steps progressbar progress
+{
+    background: #079E05;
 }
 
 .setup-main
@@ -76,4 +104,5 @@ grid > label
     background: #08339B;
     border-top: 2px solid #000;
     border-image: url('resource:///uk/oddmatics/wintc/wsetupx/borderb.png') 2 0 0 0;
+    padding-right: 20px;
 }

@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 
 set(REPO_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
 # Define some constants used by builds
 #
 set(WINTC_ASSETS_INSTALL_DIR share/wintc)
+set(WINTC_BIN_SYMLINKS_DIR bin/wintc)
 
 if (DEFINED WINTC_NO_PEDANTIC_COMPILE)
     set(WINTC_COMPILE_OPTIONS -Wall -Wextra -Werror -Wno-overlength-strings)

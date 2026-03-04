@@ -3,25 +3,63 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <wintc/shelldpa.h>
+
+//
+// PUBLIC ENUMS
+//
+enum
+{
+    WINTC_SETUP_STEP_COLLECTING_INFORMATION = 0,
+    WINTC_SETUP_STEP_DYNAMIC_UPDATE,
+    WINTC_SETUP_STEP_PREPARING_INSTALLATION,
+    WINTC_SETUP_STEP_INSTALLING_WINDOWS,
+    WINTC_SETUP_STEP_FINALIZING_INSTALLATION,
+    N_WINTC_SETUP_STEPS
+};
 
 //
 // GTK OOP BOILERPLATE
 //
-typedef struct _WinTCSetupWindowClass WinTCSetupWindowClass;
-typedef struct _WinTCSetupWindow      WinTCSetupWindow;
+#define WINTC_TYPE_SETUP_WINDOW (wintc_setup_window_get_type())
 
-#define WINTC_TYPE_SETUP_WINDOW            (wintc_setup_window_get_type())
-#define WINTC_SETUP_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), WINTC_TYPE_SETUP_WINDOW, WinTCSetupWindow))
-#define WINTC_SETUP_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), WINTC_TYPE_SETUP_WINDOW, WinTCSetupWindow))
-#define IS_WINTC_SETUP_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), WINTC_TYPE_SETUP_WINDOW))
-#define IS_WINTC_SETUP_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), WINTC_TYPE_SETUP_WINDOW))
-#define WINTC_SETUP_WINDOW_GET_CLASS(obj)  (G_TYPE_CHECK_INSTANCE_GET_CLASS((obj), WINTC_TYPE_SETUP_WINDOW))
-
-GType wintc_setup_window_get_type(void) G_GNUC_CONST;
+G_DECLARE_FINAL_TYPE(
+    WinTCSetupWindow,
+    wintc_setup_window,
+    WINTC,
+    SETUP_WINDOW,
+    WinTCDpaDesktopWindow
+)
 
 //
 // PUBLIC FUNCTIONS
 //
-GtkWidget* wintc_setup_window_new();
+GtkWidget* wintc_setup_window_new(void);
+
+void wintc_setup_window_disable_billboards(
+    WinTCSetupWindow* wnd
+);
+void wintc_setup_window_enable_billboards(
+    WinTCSetupWindow* wnd
+);
+void wintc_setup_window_disable_throbbers(
+    WinTCSetupWindow* wnd
+);
+void wintc_setup_window_enable_throbbers(
+    WinTCSetupWindow* wnd
+);
+void wintc_setup_window_set_completion_minutes_approx(
+    WinTCSetupWindow* wnd,
+    guint             minutes
+);
+void wintc_setup_window_set_current_step(
+    WinTCSetupWindow* wnd,
+    gint              step
+);
+void wintc_setup_window_set_current_step_progress(
+    WinTCSetupWindow* wnd,
+    const gchar*      step_descr,
+    gdouble           fraction
+);
 
 #endif
